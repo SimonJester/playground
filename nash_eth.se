@@ -1,0 +1,46 @@
+first_deposited = 1000
+first_sender = 1001
+first_value = 1002
+first_accepted = 1003
+
+second_deposited = 2000
+second_sender = 2001
+second_value = 2002
+second_accepted = 2003
+
+// First deposit
+if !contract.storage[first_deposited]:
+    contract.storage[first_deposited] = 1
+    contract.storage[first_sender] = msg.sender
+    contract.storage[first_value] = msg.value
+
+    contract.storage[second_sender] = msg.data[0]
+    contract.storage[second_value] = msg.data[1]
+
+// Second deposit
+elif !contract.storage[second_deposited]:
+    if msg.sender == contract.storage[second_sender]:
+        contract.storage[second_deposited] = 1
+    else:
+        return(contract.storage[second_value])
+
+// Accept success
+elif msg.data[0] == 0:
+    if msg.sender == contract.storage[second_sender]:
+        contract.storage[second_accepted] = 1
+    elif msg.sender == contract.storage[first_sender]:
+        contract.storage[first_accepted] = 1
+
+    if contract.storage[first_accepted] and contract.storage[second_accepted]:
+        send(contract.storage[first_sender], contract.storage[first_value], tx.gas-100)
+        suicide(contract.storage[second_sender])
+
+    elif !contract.storage[second_deposited]):
+        suicide(contract.storage[first_sender])
+
+// Destroy funds
+elif msg.data[0] == 1:
+    if msg.sender == contract.storage[first_sender]):
+        suicide(0)
+    elif msg.sender == contract.storage[second_sender] and contract.storage[second_accepted]:
+        suicide(0)
