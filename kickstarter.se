@@ -1,0 +1,63 @@
+//Kickstarter
+//Author: andrew_atkin@hotmail.com
+
+//Taken from: mintchalk.com/c/68f3e
+
+//TODO: Should a fee be deducted for running program to return donations after expiration date?
+//TODO: Add registration & deregistration
+//TODO: Add DOUG
+ 
+//Contract Storage
+//[1000] is contract state (0 = 1st run, 1 = initialized flag)
+//[1001] is contract creator address
+//[1002] is target date & time for campaign to finish (in seconds)
+//[1003] is target funding amount for campaign
+//[1004] is number of donors
+//[2000] is donor 1 address, [2001] is donor amount
+//[2002] is donor 2 address...
+
+//First run of contract
+if !contract.storage[1000]:
+//Need 2 args for creation, expiry days and target funding.
+//If this fails, the contract stores balance which can be viewed externally
+    if msg.datasize < 2 or msg.datasize > 2:
+        return(0) //Failed run
+    else:
+        contract.storage[1000] = 1
+        contract.storage[1001] = msg.sender
+        contract.storage[1002] = block.timestamp + msg.data[0] * 86400
+        contract.storage[1003] = msg.data[1]
+        //Add registration and maybe DOUG later
+        return(1) //Successfully created contract
+
+//Create constants based on contract storage
+creator = contract.storage[1001]
+exptime = contract.storage[1002]
+target = contract.storage[1003]
+curtime = block.timestamp
+
+//If already expired, refund  sender
+if curtime > exptime:
+    send(msg.sender, msg.value, 0, 0)
+    //And continue on to next if statement to dispose of funds
+else:
+    //Campaign deadline not reached yet
+    //Add donors to storage array using the pair (donor, amount donated)
+    contract.storage[1004] = contract.storage[1004] + 1
+    donors = contract.storage[1004]
+    start = donors * 2
+    contract.storage[1998 + start] = msg.sender
+    contract.storage[1999 + start] = msg.value
+    return(2) //Successfully accepted donation
+
+if contract.balance > target: //Successful campaign
+    suicide(creator)
+else:  //Otherwise, refund the funders
+    i = 0
+    donors = contract.storage[1004]
+    while i < donors * 2:
+        send(contract.storage[2000 + i], contract.storage[2001 + i], 0, 0)
+        i = i + 2
+    //Add deregister later
+    suicide(creator)
+

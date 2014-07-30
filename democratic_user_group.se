@@ -1,0 +1,62 @@
+// Democratic User Group
+// Two types: pending users, existing users
+// Need to prevent duplicate voting by storing who's voted for a pending user
+
+// TODO: Understand how this same program is used repeatedly -- is memory wasted storing all prior votes?
+
+// Taken from: mintchalk.com/c/36064
+
+// Initialize contract with one initial member
+if !contract.storage[0]:
+    contract.storage[0] = 1
+    contract.storage[msg.sender] = 1
+
+// If the sender isn't a member of the group, tell sender if the queried address is a member
+if !contract.storage[msg.sender]:
+    queriedaddress = msg.data[0]
+    if contract.storage[queriedaddress]:
+        return(1)  //Queried address is a member
+    else:
+        return(0)  //Queried address is not a member
+
+// Vote to add a member to the group
+if msg.data[0] == 0:
+    address = msg.data[1]  // Address of potential new member
+    aye = msg.data[2]  // aye = 1, nay = 0
+    voter = msg.sender
+    k = sha3(address)
+    contract.storage[address] = k
+
+    // Check if vote is open
+    if contract.storage[k]:
+        stop
+
+    // Vote in favor
+    if aye:
+        // Check user hasn't already voted
+        if !contract.storage['%s%s' % (k, voter)]:
+            contract.storage['%s%s' % (k, voter)] = 1  // Record aye vote
+            contract.storage['%s%s' % (k, 1)] += 1  // Increment aye vote count
+
+            if contract.storage['%s%s%s' % (k, voter, 1)]:  // If user already voted nay
+                contract.storage['%s%s%s' % (k, voter, 1)] =  0  // Remove nay vote
+                contract.storage['%s%s' % (k,2)] -= 1  // Decrement nay vote
+
+    // Vote against
+    else:
+        // Check user hasn't already voted
+        if !contract.storage['%s%s%s' % (k, voter, 1)]:
+            contract.storage['%s%s%s' % (k, voter, 1)] = 1  // Record nay vote
+            contract.storage['%s%s' % (k, 2)] += 1  // Increment nay vote count
+
+            if contract.storage['%s%s' % (k, voter)]:  // If user already voted aye
+                contract.storage['%s%s' % (k, voter)] = 0  // Remove aye vote
+                contract.storage['%s%s' % (k, 1)] -= 1  // Decrement aye vote
+
+    // If aye votes exceed half of all voters
+    if contract.storage['%s%s' % (k, 1)] * 2 > contract.storage[0]
+        contract.storage[address] = 1  // Validate user
+        contract.storage[0] += 1  // Increment total voter count
+        contract.storage[k] = 1  // Close vote
+
+

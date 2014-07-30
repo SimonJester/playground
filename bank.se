@@ -1,0 +1,18 @@
+// Bank
+//(I don't get this one.)
+
+// Taken from: mintchalk.com/c/18aea
+
+account = msg.sender
+balance = contract.storage[account]
+if account == contract.storage[0] and msg.data[0] > 100:
+    if msg.data[0] == 101:
+        msg(0x70a0eea14b83681bc54bb9d2af6e1afc3af1f84a, 0, tx.gas-100, [msg.data[1]], 1)
+
+if msg.data[0] == 1:
+    contract.storage[account] = balance + msg.value
+else:
+    mktx(account, contract.storage[account])
+    contract.storage[acount] = 0
+
+

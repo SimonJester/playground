@@ -1,0 +1,38 @@
+// Starbucks
+// Simulates a Starbucks gift rewards card
+
+// TODO: Understand how sender and recipient turned into arrays
+// TODO: Provide logic that adds users to database
+
+// Taken from: mintchalk.com/c/5c31e
+
+// Data interface: recipientAddress, dollarAmount, rewardAmount
+// Contract storage format: accountAddress: [dollarAmount, purchaseCount, rewardAmount]
+
+// If the sender and recipient are in our database
+if contract.storage[msg.sender]:
+    sender = contract.storage[msg.sender]
+    if contract.storage[msg.data[0]]:
+        recipient = contract.storage[msg.data[0]]
+
+        // Transfer the dollar and reward amount from the sender to the recipient
+        // if the sender has enough dollar and reward balance
+        if sender[0] >= msg.data[1] & sender[1] >= msg.data[2]:
+            sender[0] -= msg.data[1]
+            recipient[0] += msg.data[1]
+            sender[2] -= msg.data[2]
+            recipient[2] += msg.data[2]
+
+            // Increment sender's purchase count
+            sender[1] += 1
+
+            // If the sender's purchase count is >= 12 increment their reward count
+            if sender[1] >= 12:
+                sender[1] += 1
+                sender[2] = 0
+
+    return([sender[0], sender[1], sender[2]])
+else:
+    return(0)
+
+

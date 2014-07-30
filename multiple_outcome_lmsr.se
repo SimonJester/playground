@@ -1,0 +1,134 @@
+//Multiple Outcome LMSR
+
+//Taken from: mintchalk.com/c/25298
+
+//Initialize
+if msg.data[0] == 0:
+
+    // Parameters from message data
+    title = msg.data[1]
+    judge = msg.data[2]
+    fidelity = msg.data[3]
+    num_outcomes = msg.data[4]
+
+    outcomes = array(num_outcomes)
+    probs = array(num_outcomes)
+
+    i = 0
+    while i < num_outcomes:
+        outcomes[i] = msg.data[i + 6]
+        probs[i] = msg.data[i + 6 + num_outcomes]
+
+    // Stop conditions
+    if contract.storage[0]:
+        stop
+
+    total = 0
+    i = 0
+    while i < num_outcomes:
+        if probs[i] == 0:
+            stop
+        total = total + probs[i]
+        i = i + 1
+
+    if total != fidelity:
+        stop
+
+    // Find lowest prob
+    min_prob = fidelity
+    while i < num_outcomes:
+        if probs[i] < min_prob:
+            min_prob = probs[i]
+
+    // Get b ( figure out gas stuff )
+    b = 10^6 * msg.value / msg(logfunction, 0, tx.gas-100, 10^6 / min_prob)
+
+    // Save data to contract storage
+    contract.storage[0] = 1
+    contract.storage[1] = title
+    contract.storage[2] = judge
+    contract.storage[3] = patron
+    contract.storage[4] = fidelity
+    contract.storage[5] = b
+    contract.storage[6] = num_outcomes
+    contract.storage[7] = outcomes
+    contract.storage[8] = probs
+
+    // Save initial bet data
+    contract.storage[1001] = probs
+    contract.storage[1000] = 1001
+
+// Make bet
+elif msg.data[0] == 1:
+    // Get variables
+    new_probs = msg.data[1]
+    old_probs = contract.storage[1001]
+    position = contract.storage[1000] + 1
+    sender = msg.sender
+    value = msg.value
+    b = contract.storage[5]
+    num_outcomes = contract.storage[6]
+
+    // Stop conditions
+    // Contract initialized
+    if !contract.storage[0]:
+        stop
+    // Probabilities sum to fidelity
+    // Market closed
+    if contract.storage[9]:
+        stop
+
+    // Generate input arrays for payoffs
+    i = 0
+    max_loss_index = 0
+    loss_input_array = array(num_outcomes)
+    gain_input_array = array(num_outcomes)
+
+    while i < num_outcomes:
+        if new_probs[i] > old_probs[i]:
+            gain_input_array[i] = new_probs[i] * 10^6 / old_probs[i]
+        elif new_probs[i] < old_probs[i]:
+            loss_input = old_probs[i] * 10^6 / new_probs[i]
+            loss_input_array[i] = loss_input
+            if loss_input > loss_input_array[max_loss_index]:
+                max_loss_index = i
+        i = i + 1
+
+    // Ensure user can afford max loss before continuing
+    max_loss = b * msg(logcontract, 0, gas, loss_input[max_loss_index])
+    if value < max_loss:
+        stop
+
+    // Calculate payoffs
+    payoff_array = array(num_outcomes)
+    i = 0
+
+    while i < num_outcomes:
+        if loss_input_array[i]:
+            payoff_array[i] = max_loss - b * msg(logcontract, 0, gas, loss_input_array[i])
+        elif gain_input_array[i]:
+            payoff_array[i] = max_loss + b * msg(logcontract, 0, gas, loss_input_array[i])
+        i = i + 1
+
+    // Save probability array
+    contract.storage[position] = new_probs
+    contract.storage[1001] = new_probs
+    contract.storage[1000] = position
+
+    // Save payoff array
+    contract.storage[sender] = payoff_array
+
+// Query data
+elif msg.data[0] == 2:
+    // Contract detail (title, judge, etc.)
+    // last probability distribution
+    // bet history
+    // bet cost
+    stop
+
+// Ping judge
+if judge[0]:
+    contract.storage[9] = 1
+    contract.storage[10] = judge[1]
+
+
