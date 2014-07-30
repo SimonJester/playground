@@ -1,0 +1,30 @@
+// Token System
+
+// Taken from: mintchalk.com/c/9675a
+
+current_address = '0xcd2a3d9f938e13cd947ec05abc7fe734df8dd826'
+
+initialized = 1000
+
+// Set up currency
+if !contract.storage[initialized]:
+    contract.storage[initialized] = 1
+    contract.storage[current_address] = 10^6
+
+// Get current balance
+elif msg.datasize == 1:
+    addr = msg.data[0]
+    return(contract.storage[addr])
+
+// Send funds
+else:
+    avail_value = contract.storage[msg.sender]
+    to = msg.data[0]
+    value = msg.data[1]
+
+    if  value <= avail_value:
+        contract.storage[msg.sender] = avail_value - value
+        contract.storage[to] = contract.storage[to] + value
+        return(1)  // Funds sent successfully
+    else:  
+        return(0)  // Insufficient funds
