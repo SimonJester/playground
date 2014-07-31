@@ -32,7 +32,8 @@ elif msg.data[0] == 0:
         contract.storage[first_accepted] = 1
 
     if contract.storage[first_accepted] and contract.storage[second_accepted]:
-        send(contract.storage[first_sender], contract.storage[first_value], tx.gas-100)
+        send(contract.storage[first_sender], 
+             contract.storage[first_value], tx.gas-100)
         suicide(contract.storage[second_sender])
 
     elif !contract.storage[second_deposited]):
@@ -40,7 +41,8 @@ elif msg.data[0] == 0:
 
 // Destroy funds
 elif msg.data[0] == 1:
-    if msg.sender == contract.storage[first_sender]):
+    if msg.sender == contract.storage[first_sender]:
         suicide(0)
-    elif msg.sender == contract.storage[second_sender] and contract.storage[second_accepted]:
+    elif (msg.sender == contract.storage[second_sender] 
+          and contract.storage[second_accepted]):
         suicide(0)
