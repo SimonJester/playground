@@ -1,17 +1,15 @@
 # Coin Example
 
 # Initialization
-this.store[this.origin()] = 10**20
+contract.storage[tx.origin()] = 10**20
 
 exit compile {
     var to = this.data[0]
-    var from = this.origin()
+    var from = tx.origin()
     var value = this.data[1]
     
-    if this.store[from] >= value {
-        this.store[from] = this.store[from] - value
-        this.store[to] = this.store[to] + value
+    if contract.storage[from] >= value {
+        contract.storage[from] = contract.storage[from] - value
+        contract.storage[to] = contract.storage[to] + value
     }
 }
-
-
