@@ -1,0 +1,34 @@
+# Not done yet!
+
+init:
+	contract.storage[msg.sender] = 10000
+code:
+	to = msg.data[0]
+	from = msg.sender
+	value = msg.data[1]
+	if contract.storage[from] >= value:
+		contract.storage[from] = contract.storage[from]  - value
+		contract.storage[to] = contract.storage[to] + value;; Splitter
+
+
+
+
+
+;; Taken from: https://github.com/ethereum/cpp-ethereum/wiki/LLL%20Examples%20for%20PoC%205
+
+{
+  [0] "Splitter"
+  (call (- (gas) 100) 0x2d0aceee7e5ab874e22ccf8d1a649f59106d74e8 0 0 8 0 0)
+
+  (return 0 (lll {
+    [count] (/ (calldatasize) 32)
+    [pay] (/ (callvalue) @count)
+
+    ;; Cycle through each address
+    (for {} (< @i @count) [i](+ @i 1)
+      ;; Send to 'i'th argument (assuming it's an address).
+      (call (- (gas) 100) (calldataload (* @i 32)) @pay 0 0 0 0)
+    )
+  } 0))
+}
+
