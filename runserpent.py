@@ -19,9 +19,18 @@ def run_contract(contract, parms):
     return s.send(t.k0, c, 0, [parms])
 
 
+def print_usage():
+    print "Usage:"
+    print "    runserpent.py <serpent-contract-name> <contract-parameters>"
+    print ""
+
+
 def main(args):
     """Parse command line options (TODO)"""
-    print run_contract(args[0], [convert_arg(val) for val in args[1:]])
+    try:
+        print run_contract(args[0], [convert_arg(val) for val in args[1:]])
+    except IndexError:
+        print_usage()
 
 
 if __name__ == "__main__":
