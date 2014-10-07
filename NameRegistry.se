@@ -1,0 +1,9 @@
+key = msg.data[0]
+value = msg.data[1]
+
+# Key not yet claimed
+if not contract.storage[key]:
+   contract.storage[key] = value
+   return(1)
+else:
+   return([0], 1)  # Key already claimed

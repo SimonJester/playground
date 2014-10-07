@@ -2,16 +2,12 @@
 
 from pyethereum import tester as t
 import sys
-
-
-def run_contract(contract, args):
-    s = t.state()  #Initialize a genesis block
-    c = s.contract(contract)
-    return s.send(t.k0, c, 0, [args])
+from runserpent import run_serpent
+from runserpent import convert_args
 
 
 def main():
-    print run_contract('mul2.se', [int(val) for val in sys.argv[1:]])
+    print run_serpent('mul2.se', convert_args(sys.argv[1:]))
 
 
 if __name__ == "__main__":

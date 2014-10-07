@@ -12,8 +12,11 @@ def convert_arg(arg):
     else:
         return arg
 
+def convert_args(args):
+    return [convert_arg(val) for val in args]
 
-def run_contract(contract, parms):
+
+def run_serpent(contract, parms):
     s = t.state()  #Initialize a genesis block
     c = s.contract(contract)
     return s.send(t.k0, c, 0, [parms])
@@ -28,7 +31,7 @@ def print_usage():
 def main(args):
     """Parse command line options (TODO)"""
     try:
-        print run_contract(args[0], [convert_arg(val) for val in args[1:]])
+        print run_serpent(args[0], convert_args(args[1:]))
     except IndexError:
         print_usage()
 
