@@ -1,8 +1,6 @@
 #! /usr/bin/env python
 
 from pyethereum import tester as t
-import sys
-import re
 
 
 def run_serpent():
@@ -26,11 +24,11 @@ def run_serpent():
     print "Claim name \"{}\"\n at location {}\n result = {}".format(name, locn, result)
 
 
-def main(args):
+def main():
     """Parse command line options (TODO)"""
     run_serpent()
 
 
 if __name__ == "__main__":
-    main(sys.argv[1:])
+    main()
 
